@@ -30,7 +30,7 @@ class ShapesConfig(Config):
     IMAGES_PER_GPU = 8
 
     # Number of classes (including background)
-    NUM_CLASSES = 1 + 3  # background + 3 shapes
+    NUM_CLASSES = 1 + 5  # background + 5 shapes
 
     # Use small images for faster training. Set the limits of the small side
     # the large side, and that determines the image shape.
@@ -191,7 +191,7 @@ class ShapesDataset(utils.Dataset):
                             and location. Differs per shape type.
         """
         # Shape
-        shape = random.choice(["circle","square","triangle","hexagon", "wonkagon"])
+        shape = random.choice(["circle","square","triangle","wonkagon","hexagon"])
         # Color
         color = tuple([random.randint(0, 255) for _ in range(3)])
         # Center x, y
@@ -291,22 +291,22 @@ if __name__ == "__main__":
         # layers. You can also pass a regular expression to select
         # which layers to train by name pattern.
         
-        # model.train(dataset_train, dataset_val, 
-        #             learning_rate=config.LEARNING_RATE, 
-        #             epochs=1, 
-        #             layers='heads')    
+        model.train(dataset_train, dataset_val, 
+                    learning_rate=config.LEARNING_RATE, 
+                    epochs=1, 
+                    layers='heads')    
 
         # Fine tune all layers
         # Passing layers="all" trains all layers. You can also 
         # pass a regular expression to select which layers to
         # train by name pattern.
 
-        # model.train(dataset_train, dataset_val, 
-        #             learning_rate=config.LEARNING_RATE / 10,
-        #             epochs=2, 
-        #             layers="all")  
+        model.train(dataset_train, dataset_val, 
+                    learning_rate=config.LEARNING_RATE / 10,
+                    epochs=2, 
+                    layers="all")  
 
-        #model.keras_model.save_weights(SHAPES_MODEL_PATH)         
+        model.keras_model.save_weights(SHAPES_MODEL_PATH)         
     else:
         # Validation dataset
         dataset_val = ShapesDataset()
@@ -344,11 +344,13 @@ if __name__ == "__main__":
         log("gt_bbox", gt_bbox)
         log("gt_mask", gt_mask)
 
-        # visualize.display_instances(original_image, gt_bbox, gt_mask, gt_class_id, 
-        #                             dataset_val.class_names, figsize=(8, 8))
+
+        visualize.display_instances(original_image, gt_bbox, gt_mask, gt_class_id, 
+                                    dataset_val.class_names, figsize=(8, 8))
         results = model.detect([original_image], verbose=1)
 
         r = results[0]
+        print(r['class_ids'])
         visualize.display_instances(original_image, r['rois'], r['masks'], r['class_ids'], 
                                     dataset_val.class_names, r['scores'], ax=get_ax())
         key = input("Press a key to end")
